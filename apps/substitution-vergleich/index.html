@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Substitution – zwei Koordinatensysteme, ein Integral</title>
+<script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
+<style>
+:root{font-family:system-ui,sans-serif;color:#17212b;background:#f4f7fb}*{box-sizing:border-box}body{margin:0;padding:clamp(12px,3vw,28px);max-width:1500px;margin-inline:auto}h1{font-size:clamp(1.35rem,3vw,2rem);margin:.1em 0}.lead{margin:.3em 0 1em;color:#435466}.controls{display:flex;flex-wrap:wrap;gap:14px 22px;padding:14px;background:white;border-radius:12px;box-shadow:0 2px 12px #18334b14}.control{min-width:145px;flex:1}.control label{display:flex;justify-content:space-between;font-weight:600;font-size:.92rem}.control input{width:100%;accent-color:#2463a7}.formula{padding:12px 15px;margin:12px 0;background:#eaf2fb;border-left:4px solid #2463a7;border-radius:6px;line-height:1.7;overflow-wrap:anywhere}.panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.panel{min-width:0;background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 12px #18334b14}.panel h2{font-size:1rem;margin:0 0 8px}.ggb{width:100%;height:clamp(300px,43vw,520px)}.note{font-size:.92rem;line-height:1.55;color:#435466;margin-top:12px}.same{font-weight:700;color:#17633b}@media(max-width:780px){.panels{grid-template-columns:1fr}.ggb{height:380px}}
+</style>
+</head>
+<body>
+<h1>Substitution: zwei Achsen, derselbe Integralwert</h1>
+<p class="lead">Verändere die Parameter. Links integrieren wir nach <i>x</i>, rechts nach <i>u</i>.</p>
+<div class="controls">
+<div class="control"><label for="a">Streckung a <output id="av"></output></label><input id="a" type="range" min="0.5" max="3" step="0.1" value="2"></div>
+<div class="control"><label for="b">Verschiebung b <output id="bv"></output></label><input id="b" type="range" min="-3" max="5" step="0.5" value="5"></div>
+<div class="control"><label for="n">Exponent n <output id="nv"></output></label><input id="n" type="range" min="1" max="5" step="1" value="3"></div>
+<div class="control"><label for="x1">Start x₁ <output id="x1v"></output></label><input id="x1" type="range" min="-3" max="3" step="0.5" value="1"></div>
+<div class="control"><label for="x2">Ende x₂ <output id="x2v"></output></label><input id="x2" type="range" min="1" max="6" step="0.5" value="3"></div>
+</div>
+<div class="formula" id="equations"></div>
+<div class="panels">
+<section class="panel"><h2>1 · Ursprüngliche x-Achse</h2><div id="ggbX" class="ggb"></div></section>
+<section class="panel"><h2>2 · Substituierte u-Achse</h2><div id="ggbU" class="ggb"></div></section>
+</div>
+<p class="note"><b>Was wird hier verglichen?</b> Bei u = ax + b gilt du = a·dx, also dx = du/a. Deshalb wird aus (ax+b)<sup>n</sup> dx die Funktion (u<sup>n</sup>/a) du. Die Grenzen werden mit derselben Zuordnung umgerechnet: u₁=ax₁+b und u₂=ax₂+b. Der <span class="same">orientierte Integralwert bleibt gleich</span>. Das gilt auch, wenn Graphen unterhalb der Achse liegen; dann ist der orientierte Integralwert nicht dasselbe wie der geometrische Flächeninhalt.</p>
+<script>
+const ids=['a','b','n','x1','x2']; let gx,gu,ready=0;
+function app(id){return new GGBApplet({id,width:900,height:520,showToolBar:false,showAlgebraInput:false,showMenuBar:false,showResetIcon:false,enableShiftDragZoom:true,showZoomButtons:true,language:'de',appName:'graphing',appletOnLoad(api){if(id==='ggbX')gx=api;else gu=api;if(++ready===2)update();}},true)}
+app('ggbX').inject('ggbX'); app('ggbU').inject('ggbU');
+function num(id){return Number(document.getElementById(id).value)}
+function update(){if(!gx||!gu)return; let a=num('a'),b=num('b'),n=num('n'),x1=num('x1'),x2=num('x2');if(x1>=x2){x2=Math.min(6,x1+1);document.getElementById('x2').value=x2}
+let u1=a*x1+b,u2=a*x2+b; let area=(Math.pow(u2,n+1)-Math.pow(u1,n+1))/(a*(n+1)); ids.forEach(id=>document.getElementById(id+'v').textContent=document.getElementById(id).value);
+document.getElementById('equations').innerHTML=`<b>Substitution:</b> u = ${a}x ${b<0?'− '+(-b):'+ '+b}; &nbsp; du = ${a} dx, daher dx = (1/${a}) du.<br><b>Grenzen:</b> x: [${x1}, ${x2}] &nbsp;→&nbsp; u: [${u1}, ${u2}]<br><b>Integrale:</b> ∫<sub>${x1}</sub><sup>${x2}</sup> (${a}x ${b<0?'− '+(-b):'+ '+b})<sup>${n}</sup> dx &nbsp;=&nbsp; ∫<sub>${u1}</sub><sup>${u2}</sup> (u<sup>${n}</sup>/${a}) du<br><b>GeoGebra-Berechnung:</b> links ${area.toPrecision(6)} &nbsp;=&nbsp; ${area.toPrecision(6)}`;
+[gx,gu].forEach((g,i)=>{try{g.reset();let cmds=i===0?[`f(x)=(${a}*x+(${b}))^${n}`,`A=Integral(f,${x1},${x2})`]:[`q(u)=u^${n}/${a}`,`B=Integral(q,${u1},${u2})`];cmds.forEach(c=>g.evalCommand(c));let lo=i===0?Math.min(x1-1,-1):Math.min(u1-1,-1),hi=i===0?Math.max(x2+1,1):Math.max(u2+1,1),ys=Math.max(8,Math.pow(Math.max(Math.abs(i===0?a*lo+b:a*lo),Math.abs(i===0?a*hi+b:a*hi)),n)*1.2);g.setCoordSystem(lo,hi,-ys,ys);g.setLabelVisible(i===0?'f': 'q',true);g.setColor(i===0?'f':'q',35,105,180);g.setLineThickness(i===0?'f':'q',4);g.setLabelVisible(i===0?'A':'B',true);g.setCaption(i===0?'A':'B',`Integralwert = ${i===0?'A':'B'}`);g.setLabelStyle(i===0?'A':'B',3);g.setColor(i===0?'A':'B',40,155,95);g.setFilling(i===0?'A':'B',0.22)}catch(e){console.error(e)}})}
+ids.forEach(id=>document.getElementById(id).addEventListener('input',update));
+</script>
+</body></html>
